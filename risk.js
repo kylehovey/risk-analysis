@@ -1,56 +1,36 @@
-const [
-  oWin,
-  dWin,
-  bothTie,
-] = [ 'oWin', 'dWin', 'bothTie' ].map(Symbol);
-
-let progress = 0;
-
-const outcomes = {
-  offense: 0,
-  defense: 0,
-  tie: 0,
-};
-
-/**
- * Possible outcomes
- * Offense loses 2 men
- * Both lose 1
- * Defense loses 2
- *
- * Take lowest die from offence and discard it
- */
-
-const outcomeFor = (offenseRoll, defenseRoll) => {
-  const oSorted = [ ...offenseRoll ].sort();
-  const dSorted = [ ...defenseRoll ].sort();
+const [ OFFENSE, DEFENSE, TRADE, ] = [ 'OFFENSE', 'DEFENSE', 'TRADE' ].map(Symbol);
+const outcomeFor = (offenseRolls, defenseRolls) => {
+  const oSorted = [ ...offenseRolls ].sort().reverse();
+  const dSorted = [ ...defenseRolls ].sort().reverse();
 
   const [ oA, oB ] = oSorted;
   const [ dA, dB ] = dSorted;
 
-  let oWins = 0;
-  let dWins = 0;
-
-  if (dA >= oA) {
-    dWins++;
-  } else {
-    oWins++;
-  }
-
-  if (dB >= oB) {
-    dWins++;
-  } else {
-    oWins++;
-  }
+  const [ oWins, dWins ] = [
+    [ oA, dA ],
+    [ oB, dB ],
+  ].reduce(
+    ([ oAcc, dAcc ], [ oRoll, dRoll ]) => [
+      oAcc + (oRoll > dRoll ? 1 : 0),
+      dAcc + (dRoll >= oRoll ? 1 : 0),
+    ],
+    [ 0, 0 ],
+  );
 
   if (oWins === dWins) {
-    return bothTie;
+    return TRADE;
   } else if (oWins > dWins) {
-    return oWin;
+    return OFFENSE;
   } else {
-    return dWin;
+    return DEFENSE;
   }
 }
+
+const outcomes = {
+  offense: 0,
+  defense: 0,
+  trade: 0,
+};
 
 for (let i = 1; i <= 6 ; ++i) {
 for (let j = 1; j <= 6 ; ++j) {
@@ -58,15 +38,9 @@ for (let k = 1; k <= 6 ; ++k) {
 for (let l = 1; l <= 6 ; ++l) {
 for (let m = 1; m <= 6 ; ++m) {
   ({
-    [bothTie]: () => {
-      outcomes.tie++;
-    },
-    [oWin]: () => {
-      outcomes.offense++;
-    },
-    [dWin]: () => {
-      outcomes.defense++;
-    },
+    [TRADE]: () => outcomes.trade++,
+    [OFFENSE]: () => outcomes.offense++,
+    [DEFENSE]: () => outcomes.defense++,
   })[outcomeFor([ i, j, k ], [ l, m ])]();
 }}}}}
 
